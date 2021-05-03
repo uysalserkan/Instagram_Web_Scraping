@@ -2,12 +2,14 @@ import os
 import selenium.webdriver as webdir
 import time
 import urllib.request
+from bs4 import BeautifulSoup
 
 INSTAGRAM_LINK = 'https://instagram.com/'
 
 
 def download_images(usr_id: str):
     counter = 0
+    page_counter = 1
     image_len = int(
         input("How many image do you want to download (-1 for all): "))
     usr_url = INSTAGRAM_LINK + usr_id
@@ -25,23 +27,25 @@ def download_images(usr_id: str):
     match = False
     while(match == False):
         lastCount = lenOfPage
-        time.sleep(2)
+        time.sleep(1)
         lenOfPage = driver.execute_script(
             "window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
+        page_counter += 1
+
+        if (page_counter * 9) / image_len > 1:
+            break
+
         if lastCount == lenOfPage:
             match = True
 
     usr_posts = []
-    usr_post_links = driver.find_elements_by_tag_name('a')
-    for link in usr_post_links:
-        post = link.get_attribute('href')
-        if '/p/' in post:
-            usr_posts.append(post)
-            if len(usr_posts) == image_len:
-                break
 
-    print(usr_posts)
-    return
+    soup = BeautifulSoup(driver.page_source, 'lxml')
+
+    source = soup.find_all('div', attrs={'class': 'v1Nh3 kIKUG _bz0w'})
+
+    for link in source:
+        usr_posts.append(INSTAGRAM_LINK + usr_id + link.find("a")["href"])
 
     for post in usr_posts:
         print("Post link:", post)
@@ -59,7 +63,7 @@ def download_images(usr_id: str):
                 "//meta[@property='og:image']").get_attribute('content')
             urllib.request.urlretrieve(
                 download_url, '{}/{}.jpg'.format(usr_id, shortcode))
-        time.sleep(2)
+        time.sleep(0.75)
         counter += 1
         if counter == image_len:
             break
