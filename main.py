@@ -10,8 +10,8 @@ INSTAGRAM_LINK = 'https://instagram.com/'
 def download_images(usr_id: str):
     counter = 0
     page_counter = 1
-    image_len = int(
-        input("How many image do you want to download (-1 for all): "))
+    # Download last 25 photos (not included multiple photos in one post.)
+
     usr_url = INSTAGRAM_LINK + usr_id
     #
     driver = webdir.Firefox()
@@ -32,7 +32,7 @@ def download_images(usr_id: str):
             "window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
         page_counter += 1
 
-        if (page_counter * 9) / image_len > 1:
+        if page_counter == 3:
             break
 
         if lastCount == lenOfPage:
@@ -65,7 +65,7 @@ def download_images(usr_id: str):
                 download_url, '{}/{}.jpg'.format(usr_id, shortcode))
         time.sleep(0.75)
         counter += 1
-        if counter == image_len:
+        if counter == 25:
             break
 
 
